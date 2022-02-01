@@ -66,14 +66,10 @@ class CreateMeet(graphene.Mutation):
             schedule.interval_time = input.interval_time
 
             overlapping_slots, end_date_time = check_overlapping_schedule(input.start_date_time, input.interval_time)
-            # end_date_time = input.start_date_time + \
-            #     timedelta(minutes=int(input.interval_time))
 
             schedule.end_date_time = end_date_time
             
-            # overlapping_slots = Schedule.objects.filter(Q(start_date_time__lte=input.    start_date_time, end_date_time__gte=input.start_date_time) | Q(start_date_time__lte=end_date_time, end_date_time__gte=end_date_time))
-
-            if not overlapping_slots.exists():
+            if not overlapping_slots.filter(user=info.context.user).exists():
                 schedule.save()
                 return CreateMeet(data=schedule)
             else:
@@ -105,7 +101,7 @@ class UpdateMeet(graphene.Mutation):
             schedule.start_date_time = start_date_time
             schedule.interval_time = interval_time
 
-            if not overlapping_slots.exists():
+            if not overlapping_slots.filter(user=info.context.user).exists():
                 schedule.save()
                 return UpdateMeet(data=schedule)
             else:
